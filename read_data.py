@@ -59,9 +59,9 @@ class Read_data(object):
         return x_train, x_test, y_train, y_test, feature_names
     
     def Transformer_data_486(self):
-        feature_name_data = pd.read_csv("..\\data\\score_selected_feature_name.csv", header=0)
+        feature_name_data = pd.read_csv("data\\score_selected_feature_name.csv", header=0)
         feature_name = feature_name_data.iloc[0, :]
-        rowdata = pd.read_csv("..\\data\\com_patient_sample_mrna.csv", header=None, index_col=0, low_memory=False)
+        rowdata = pd.read_csv("data\\com_patient_sample_mrna.csv", header=None, index_col=0, low_memory=False)
         data = rowdata.loc[feature_name, :]
         data = data.T
         data  = data.astype(float)
@@ -84,9 +84,9 @@ class Read_data(object):
         return train_data, x_test, train_targets, y_test
 
     def Transformer_data_486_Kmeans(self, category=5):
-        feature_name_data = pd.read_csv("..\\data\\score_selected_feature_name.csv", header=0)
+        feature_name_data = pd.read_csv("data\\score_selected_feature_name.csv", header=0)
         feature_name = feature_name_data.iloc[0, :]
-        rowdata = pd.read_csv("..\\data\\com_patient_sample_mrna.csv", header=None, index_col=0, low_memory=False)
+        rowdata = pd.read_csv("data\\com_patient_sample_mrna.csv", header=None, index_col=0, low_memory=False)
         data = rowdata.loc[feature_name, :]
         data = data.T
         data  = data.astype(float)
@@ -141,7 +141,7 @@ class Read_data(object):
     def Transformer_data_286(self, Normalization=True, data2tensor=False, zero=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # 读取数据,去除第一行
-        data = pd.read_csv("..\\data\\new_data.csv", header=1)
+        data = pd.read_csv("data\\new_data.csv", header=1)
         # 取最后一列作为标签
         targets = data.iloc[:, -1]  
         # 其他列为特征
