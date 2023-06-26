@@ -14,50 +14,6 @@ class Read_data(object):
     def __init__(self) -> None:
         pass       
 
-    def data(self, csv_path=r'data\com_patient_sample_mrna.csv',
-        selected_feature_name_same_path=r'data\50_selected_feature_name_same.csv',
-        selected_feature_name_diff_path=r'data\importance_paixu_50.csv', 
-        test_size=0.1, random_state=42):
-        # 读入原始数据
-        df = pd.read_csv(csv_path, header=None, index_col=0, low_memory=False)
-        data = df.T
-        data = data.dropna(axis=1, how='any')
-        data = data.drop(['P_ID'], axis=1)
-        data['label'] = pd.to_numeric(data['label'], errors='coerce')
-        data = pd.DataFrame(data, dtype=np.float32)
-
-        feature = data.drop(['label'], axis=1)
-        label = data['label'].values
-        label = np.array(label) - 1
-
-        # 从原始数据中提取特征
-        pt = 278
-
-        xtrain, xtest, y_train, y_test = train_test_split(feature, label, test_size=test_size, stratify=label, random_state=random_state)
-        selected_feature_name_same = pd.read_csv(selected_feature_name_same_path)
-        same_selected_feature_name = np.array(selected_feature_name_same)[0]  # 相同的特征名字
-
-        selected_feature_name_diff = pd.read_csv(selected_feature_name_diff_path)
-        diff_selected_feature_name = np.array(selected_feature_name_diff)[0]  # 不同的特征名字
-
-        same_diff_feature_name = np.zeros((2, len(same_selected_feature_name) + pt), dtype=object)
-        for s in range(len(same_selected_feature_name)):
-            same_diff_feature_name[0, s] = same_selected_feature_name[s]
-        for d in range(len(diff_selected_feature_name)):
-            s = s + 1 # type: ignore
-            if d < pt:
-                same_diff_feature_name[0, s] = diff_selected_feature_name[d]
-        same_diff_selected = same_diff_feature_name[0]
-
-        x_train = pd.DataFrame(xtrain, columns=same_diff_selected)  # 训练集
-        x_test = pd.DataFrame(xtest, columns=same_diff_selected)  # 测试集
-        feature_names = x_test.columns
-
-        x_train = np.array(x_train)
-        x_test = np.array(x_test)
-
-        return x_train, x_test, y_train, y_test, feature_names
-    
     def Transformer_data_486(self):
         feature_name_data = pd.read_csv("data\\score_selected_feature_name.csv", header=0)
         feature_name = feature_name_data.iloc[0, :]
@@ -167,4 +123,39 @@ class Read_data(object):
             train_features, x_test, train_targets, y_test = map(lambda x: torch.tensor(x.values, dtype=torch.float32).to(device), 
                                                             [train_features, x_test, train_targets, y_test])
         return train_features, x_test, train_targets, y_test
-# %%
+
+    def Transformer_data_286_NLP(self, Normalization=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # 读取数据,去除第一行
+        data = pd.read_csv("data\\new_data.csv", header=1)
+        # 取最后一列作为标签
+        targets = data.iloc[:, -1]  
+        # 其他列为特征
+        features = data.iloc[:, :-1]  
+        
+        if Normalization:
+            scaler = MinMaxScaler()
+            features = scaler.fit_transform(features)
+            features = pd.DataFrame(features, columns=data.columns[:-1])
+        total_sample = features.shape[0]
+        category = features.shape[1]
+        DATA = np.zeros((total_sample, category, 1)) 
+        for i in range(category):
+            DATA[:, i, 0] = features.iloc[:, i].values
+
+        #DATA转化为tensor
+        DATA = torch.tensor(DATA, dtype=torch.float32)
+
+        #划分训练集和测试集,训练集占80%,测试集占20%
+        train_data, x_test, train_targets, y_test = train_test_split(
+            DATA, targets, test_size=0.2
+        )
+        # 标签减1
+        train_targets -= 1
+        y_test -= 1
+        train_targets = torch.tensor(train_targets.values, dtype=torch.float32).to(device)
+        y_test = torch.tensor(y_test.values, dtype=torch.float32).to(device)
+         
+        return train_data, x_test, train_targets, y_test
+    
+

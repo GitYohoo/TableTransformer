@@ -7,7 +7,7 @@ import math
 from torch.utils.data import Dataset
 
 # 定义Transformer模型
-class Transformer(nn.Module):
+class myTransformer(nn.Module):
     def __init__(
         self, input_dim, output_dim, hidden_dim, num_layers, num_heads, dropout
     ):
@@ -29,7 +29,7 @@ class Transformer(nn.Module):
     def forward(self, x):
         x = self.transformer_encoder(x)  # 传入Transformer编码器
         x = self.dropout(x)  # 传入Dropout层
-        attention_weights = self.calculate_attention_weights(x)  # 计算注意力权重
+        # attention_weights = self.calculate_attention_weights(x)  # 计算注意力权重
         x = self.fc(x)  # 传入全连接层
         return x
 
@@ -86,6 +86,19 @@ class CustomDataset(Dataset):
         y = self.targets[idx]
         # 将目标值转换为1维张量的类索引形式
         return x, y.flatten().long()
+
+class ThreeD_CustomDataset(Dataset):
+    def __init__(self, data, targets):
+        self.data = data
+        self.targets = targets
+
+    def __len__(self):
+        return len(self.targets)
+
+    def __getitem__(self, idx):
+        x = self.data[idx]
+        y = self.targets[idx]
+        return torch.tensor(x, dtype=torch.float32), torch.tensor(y, dtype=torch.long)
 
 
 # 定义Focal Loss损失函数
